@@ -1,7 +1,7 @@
 galaxy_info:
   role_name: "docker_compose_declarative"
-  namespace: "gi_yt"
-  author: Arya Kiran
+  namespace: "gi-yt"
+  author: Arya K
   description: A role to help automate docker compose deployments
   company: Project Segfault
 

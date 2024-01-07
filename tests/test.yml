@@ -3,4 +3,4 @@
   hosts: localhost
   remote_user: root
   roles:
-    - gi_yt.docker_compose_declarative
+    - gi-yt.docker_compose_declarative
