@@ -18,11 +18,8 @@ services:
       - {{ volume }}
 {% endfor %}
 {% endif %}
-    environment:
-{% for key, value in app.docker_settings.common_env.items() %}
-      {{ key }}: {{ value | quote }}
-{% endfor %}
 {% if service.environment is defined  %}
+    environment:
 {% for key, value in service.environment.items() %}
       {{ key }}: {{ value | quote }}
 {% endfor %}
