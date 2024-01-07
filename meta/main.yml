@@ -1,6 +1,6 @@
 galaxy_info:
   role_name: "docker_compose_declarative"
-  namespace: "aryak"
+  namespace: "gi_yt"
   author: Arya Kiran
   description: A role to help automate docker compose deployments
   company: Project Segfault
