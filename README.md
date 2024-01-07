@@ -1,38 +1,69 @@
-Role Name
+Docker Compose Declarative
 =========
 
-A brief description of the role goes here.
-
-Requirements
-------------
-
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+A playbook that allows you to declaratively define docker compose
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+See templates/docker-compose.yml.j2. List coming soon :P
 
-Dependencies
-------------
-
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+Some extra mandatory envvars:
+`app`: the variable that contains nested data about compose
+`app_name`: name of the stack to deploy
+`default_restart_policy`: unless-stopped / never / always
+`configs_dir`: Directory where configs for your stacks (like volumes basically) will be stored on server
+`configs_dir_local`: Directory where configs for your stacks (like volumes basically) will be stored in the repo
+`compose_dir`: Directory where compose file for the stacks will be stored on your server
+`data_dir`: Directory where stack data will be stored on the server
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+```yaml
+- name: Docker
+  hosts: in
+  vars:
+	apps:
+	  groups:
+	    APP_NAME:
+		  needs_configs_dir: true
+		  needs_data_dir: true
+	      docker_settings:
+	        services:
+	          - name: CONTAINER-1
+	            image: REGISTRY_PATH
+	            ports:
+	              - "1234:5678"
+	            environment:
+	              A: "BCD"
+				mounts:
+				  - "{{configs_dir}}/APP_NAME/config.yaml:/var/lib/app/config.yaml"
+				  - "{{data_dir}}/APP_NAME/uploads:/var/lib/app/uploads"
+				command: "--some-arg-here"
+				user: 1000
+  tasks:
+    - name: Deploy stack role
+      ansible.builtin.include_role:
+        name: aryak.docker_compose_declarative
+      vars:
+        app: "{{ item.value }}"
+        app_name: "{{ item.key | lower }}"
+        default_restart_policy: unless-stopped
+        configs_dir: "/opt/configs"
+        configs_dir_local: "./configs/{{ item.key }}"
+        compose_dir: "/opt/docker"
+        data_dir: "/opt/docker"
+      loop: "{{ apps.groups | dict2items }}"
+      when: item.value.docker_settings
+```
 
 License
 -------
 
-BSD
+AGPL 3.0
 
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Arya Kiran <me@aryak.me>
