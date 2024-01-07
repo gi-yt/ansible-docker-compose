@@ -1,0 +1,52 @@
+# Credit for the template: https://github.com/thekitty-zone/infrastructure
+version: "3.7"
+services:
+{% for service in app.docker_settings.services %}
+  {{ service.name }}:
+    image: {{ service.image if service.image is defined else app.docker_settings.common_image }}
+    container_name: {{ service.name }}
+    restart: {{ service.restart_policy if service.restart_policy is defined else default_restart_policy }}
+{% if service.ports is defined  %}
+    ports:
+{% for port in service.ports %}
+     - "{{ port }}"
+{% endfor %}
+{% endif %}
+{% if service.mounts is defined  %}
+    volumes:
+{% for volume in service.mounts %}
+      - {{ volume }}
+{% endfor %}
+{% endif %}
+    environment:
+{% for key, value in app.docker_settings.common_env.items() %}
+      {{ key }}: {{ value | quote }}
+{% endfor %}
+{% if service.environment is defined  %}
+{% for key, value in service.environment.items() %}
+      {{ key }}: {{ value | quote }}
+{% endfor %}
+{% endif %}
+{% if service.command is defined  %}
+    command: "{{ service.command }}"
+{% endif %}
+{% if service.depends_on is defined  %}
+    depends_on:
+{% for dependency in service.depends_on %}
+      - {{ dependency }}
+{% endfor %}
+{% endif %}
+{% if service.networks is defined %}
+    networks:
+{% for network in service.networks %}
+      - {{ network }}
+{% endfor %}
+{% endif %}
+{% if service.extra_vars is defined %}
+{% for key, value in service.extra_vars.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+volumes:
+    {{ app.docker_settings.volumes }}

@@ -1,0 +1,60 @@
+---
+- name: "Check if exists: {{ compose_dir }}/{{ app_name }}"
+  ansible.builtin.stat:
+    path: "{{ compose_dir }}/{{ app_name }}"
+  register: compose_dir_exists
+
+- name: "Create Directory {{ compose_dir }}/{{ app_name }}"
+  ansible.builtin.file:
+    path: "{{ compose_dir }}/{{ app_name }}"
+    state: directory
+    mode: '0755'
+  when: compose_dir_exists.stat.exists
+
+- name: "Check if exists: {{ configs_dir }}/{{ app_name }}"
+  ansible.builtin.stat:
+    path: "{{ configs_dir }}/{{ app_name }}"
+  register: configs_dir_exists
+
+- name: "Create Directory {{ configs_dir }}/{{ app_name }}"
+  ansible.builtin.file:
+    path: "{{ configs_dir }}/{{ app_name }}"
+    state: directory
+    mode: '0755'
+  when: configs_dir_exists.stat.exists and app.needs_configs_dir
+
+- name: "Copy configs to {{ configs_dir }}/{{ app_name }}"
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ configs_dir }}/{{ app_name }}/{{ item.path }}"
+    mode: "{{ item.mode }}"
+  with_community.general.filetree: "{{ configs_dir_local }}/{{ app_name }}"
+  when: item.state == 'file'
+
+- name: "Check if exists: {{ data_dir }}/{{ app_name }}"
+  ansible.builtin.stat:
+    path: "{{ data_dir }}/{{ app_name }}"
+  register: data_dir_exists
+
+- name: "Create Directory {{ data_dir }}/{{ app_name }}"
+  ansible.builtin.file:
+    path: "{{ data_dir }}/{{ app_name }}"
+    state: directory
+    mode: '0755'
+  when: data_dir_exists.stat.exists and app.needs_data_dir
+
+- name: "Template docker compose files"
+  ansible.builtin.template:
+    src: ./docker-compose.yml.j2
+    dest: "{{ compose_dir }}/{{ app_name }}/docker-compose.yml"
+    mode: "0660"
+
+- name: "Run docker compose down"
+  ansible.builtin.command:
+    chdir: "{{ compose_dir }}/{{ app_name }}"
+    cmd: docker compose down --remove-orphans
+
+- name: "Run docker compose up"
+  ansible.builtin.command: docker compose up -d --build --pull always
+  args:
+    chdir: "{{ compose_dir }}/{{ app_name }}"

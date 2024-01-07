@@ -1,0 +1,6 @@
+---
+- name: A placeholder test
+  hosts: localhost
+  remote_user: root
+  roles:
+    - aryak.docker_compose_declarative
