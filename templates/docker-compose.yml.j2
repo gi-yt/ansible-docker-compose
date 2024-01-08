@@ -27,6 +27,9 @@ services:
 {% if service.command is defined  %}
     command: "{{ service.command }}"
 {% endif %}
+{% if service.entrypoint is defined  %}
+    entrypoint: "{{ service.entrypoint }}"
+{% endif %}
 {% if service.depends_on is defined  %}
     depends_on:
 {% for dependency in service.depends_on %}
