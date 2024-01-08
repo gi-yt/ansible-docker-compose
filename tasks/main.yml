@@ -23,6 +23,14 @@
     mode: '0755'
   when: configs_dir_exists.stat.exists == False and app.needs_configs_dir
 
+- name: Create directories
+  ansible.builtin.file:
+    path: "{{ configs_dir }}/{{ app_name }}/{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode }}"
+  with_community.general.filetree: "{{ configs_dir_local }}/{{ app_name }}"
+  when: item.state == 'directory'
+
 - name: "Copy configs to {{ configs_dir }}/{{ app_name }}"
   ansible.builtin.template:
     src: "{{ item.src }}"
