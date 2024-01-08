@@ -37,7 +37,7 @@
     dest: "{{ configs_dir }}/{{ app_name }}/{{ item.path }}"
     mode: "{{ item.mode }}"
   with_community.general.filetree: "{{ configs_dir_local }}/{{ app_name }}"
-  when: item.state == 'file'
+  when: item.state == 'file' and app.needs_configs_dir
 
 - name: "Check if exists: {{ data_dir }}/{{ app_name }}"
   ansible.builtin.stat:
